@@ -1,0 +1,73 @@
+.data                #seguemento de dados
+
+msg1: .asciiz "Insira o valor da base:"
+msg2: .asciiz "Insira o valor do expoente:"
+msg3: .asciiz "Insira o valor do módulo:"
+msg4: .asciiz "A exponencial modeular é:"
+msg5: .asciiz "O módulo não é primo"
+
+.text                         		#seguemento de código
+		j main		       # Desvio incondicional para chamar primeiro a main
+
+imprime_saida:
+
+
+
+
+imprime_erro:	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      		la   $a0, msg5         # a0 = "O módulo não é primo"
+       		syscall
+
+
+
+eh_primo:
+   inicio_loop: addi $t2,$zero,2                   # m = 2
+		div  $3,$t2	                   # m/2
+		mflo $t7			   # movendo lo(quociente) para o registrador $t7
+		slt  $t5,$a3,$t7                   # se módulo é menor que m/2
+		beq  $a3,$t0,inicio_loop           # se módulo é igual a m/2
+		addi $t3,$zero,3                   # d = 3
+		slt  $t4,$t3,$t7          	   # se d é menor que m/2
+		beq  $t3,$t0,inicio_loop           # se d é igual m/2
+
+
+
+
+
+
+
+le_modulo:	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      		la   $a0, msg3         # a0 = "Insira o valor do módulo:"
+       		syscall
+
+      		li $v0, 5              # Chamada de leitura para valor do módulo
+      		syscall
+      		add $a3,$v0,$zero      #Armazenando valor do módulo
+
+
+
+
+main: 		addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      		la   $a0, msg1         # a0 = "Insira o valor da base:"
+       		syscall
+
+
+      		li $v0, 5              # Chamada de leitura para valor da base
+      		syscall
+      		add $a1,$v0,$zero      #Armazenando valor da base
+
+
+       		li $a0, 0xA
+      		li $v0, 0xB
+      		syscall		       #Imprime quebra de linha
+
+
+     		addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+       		la   $a0, msg2         # a0 = "Insira o valor do expoente:"
+       		syscall
+
+       		li $v0, 5              # Chamada de leitura para valor do expoente
+       		syscall
+       		add $a2,$v0,$zero      #Armazenando valor do expoente
+
+       		jal le_
