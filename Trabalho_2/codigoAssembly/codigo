@@ -1,73 +1,184 @@
 .data                #seguemento de dados
 
-msg1: .asciiz "Insira o valor da base:"
-msg2: .asciiz "Insira o valor do expoente:"
-msg3: .asciiz "Insira o valor do módulo:"
-msg4: .asciiz "A exponencial modeular é:"
-msg5: .asciiz "O módulo não é primo"
+
+
+msg1: .asciiz "Insira o valor da base: "
+
+msg2: .asciiz "Insira o valor do expoente: "
+
+msg3: .asciiz "Insira o valor do módulo: "
+
+msg4: .asciiz "A exponencial modular "
+
+msg5: .asciiz " elevado a "
+
+msg6: .asciiz " (mod "
+
+msg7: .asciiz ") eh "
+
+msg8: .asciiz "."
+
+msg9: .asciiz "O módulo não é primo"
+
+
 
 .text                         		#seguemento de código
-		j main		       # Desvio incondicional para chamar primeiro a main
+
+	j main	# Desvio incondicional para chamar primeiro a main
+
 
 imprime_saida:
+	
+	add $t1, $zero, $a0
+	
+	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      	la   $a0, msg4         # a0 = "A exponencial modular "
+ 	syscall
+	
+	addi $v0, $zero, 1     # tipo de chamada 4que é a exibição e mensagem
+      	add $a0, $zero, $a1	# imprime a base 
+ 	syscall
+ 	
+ 	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      	la   $a0, msg5         # a0 = " elevado a "
+ 	syscall
+ 	
+ 	addi $v0, $zero, 1     # tipo de chamada 4que é a exibição e mensagem
+      	add $a0, $zero, $a2	# imprime o expoente 
+ 	syscall
+ 	
+ 	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      	la   $a0, msg6         # a0 = " (mod "
+ 	syscall
+ 	
+ 	addi $v0, $zero, 1     # tipo de chamada 4que é a exibição e mensagem
+      	add $a0, $zero, $a3	# imprime o modulo 
+ 	syscall
+ 	
+ 	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      	la   $a0, msg7         # a0 = ") eh "
+ 	syscall
+ 	
+ 	addi $v0, $zero, 1     # tipo de chamada 4que é a exibição e mensagem
+      	add $a0, $zero, $t1	# imprime o resultado 
+ 	syscall
+ 	
+ 	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      	la   $a0, msg8         # a0 = "."
+ 	syscall
+ 	
+ 	jr $ra
 
+calc_exp:
+	
+	add $t1, $zero, 1 # i = 1
+	add $t4, $zero, $a1 # $t4 (resultado) = base
+	
+	loop2: # loop para cálculo da exponensiação
+	slt $t2, $t1, $a2 # se "i < e" $t2 = 1
+	beq $t2, $zero, exitLoop2 # caso "i >= e" o loop é finalizado
+	mul $t4, $t4, $a1 # resultado = base * base
+	add $t1, $t1, 1 # i = i + 1
+	j loop2
+	
+	exitLoop2: 
+	div $t4, $a3 # divisão do resultado da exponenciação pelo módulo
+	mfhi $a0 #resultado final
+	
+	jr $ra
 
-
-
-imprime_erro:	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
-      		la   $a0, msg5         # a0 = "O módulo não é primo"
-       		syscall
-
-
-
+imprime_erro:	
+	
+	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+	la   $a0, msg9         # a0 = "O módulo não é primo"
+   	syscall
+	
+	jr $ra
 eh_primo:
-   inicio_loop: addi $t2,$zero,2                   # m = 2
-		div  $3,$t2	                   # m/2
-		mflo $t7			   # movendo lo(quociente) para o registrador $t7
-		slt  $t5,$a3,$t7                   # se módulo é menor que m/2
-		beq  $a3,$t0,inicio_loop           # se módulo é igual a m/2
-		addi $t3,$zero,3                   # d = 3
-		slt  $t4,$t3,$t7          	   # se d é menor que m/2
-		beq  $t3,$t0,inicio_loop           # se d é igual m/2
 
+	add $t5, $t5, 1 # EhPrimo = 1 // fala se é primo
+	add $t3, $zero, 1 
+	add $t6, $zero, 2
 
+	slt $t1, $t3, $a3 # se m > 1 => $t1 == 1 // se m <= 1 -> $t1 == 0
+	beq $t1, $zero, J # m <= 1 não pode ser primo
 
+	beq $a3, 2, loop # m == 2 'pode' ser um primo
 
+	div $a3, $t6 
+	mfhi $t4
+	bne $t4, $zero, loop # se m % 2 != 0 (m não é par)  então pode ser um primo	
 
+	J: sub $t5, $t5, $t5 #não é primo
 
+	add $t7, $zero, 3 # (d) possível divisor
 
-le_modulo:	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
-      		la   $a0, msg3         # a0 = "Insira o valor do módulo:"
-       		syscall
+	beq $t5, $zero, exitLoop # se EhPrimo = 0 não é primo
+	
+	loop:
+	div $a3, $t6
+	mflo $t4
+	
+	slt $t1, $t4, $t7 
+	beq $t1, $t3, exitLoop # se m/2 < d acaba o loop
+	
+	div $a3, $t7
+	mfhi $t4
+	bne $t4, $zero, X
+	sub $t5, $t5, $t5
+	J exitLoop
+	X: add $t7, $t7,2
+	J loop
+	
+	exitLoop:
+	beq $t5, $zero, nPrimo
+	# mensagem que é primo
+	add $v0, $zero, 1 # retorna 1 pois é primo
+	jr $ra
+	nPrimo: # mensagem que não é primo
+	add $v0, $zero, $zero # retorna 0 pois não é primo
+	jr $ra
 
-      		li $v0, 5              # Chamada de leitura para valor do módulo
-      		syscall
-      		add $a3,$v0,$zero      #Armazenando valor do módulo
+le_intero:	
+	
+	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      	la   $a0, msg1         # a0 = "Insira o valor da base:"
+       	syscall
 
+      	li $v0, 5              # Chamada de leitura para valor da base
+      	syscall
+      	
+      	add $a1,$v0,$zero      #Armazenando valor da base
 
+     	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+       	la   $a0, msg2         # a0 = "Insira o valor do expoente:"
+       	syscall
 
+      	li $v0, 5              # Chamada de leitura para valor do expoente
+       	syscall
 
-main: 		addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
-      		la   $a0, msg1         # a0 = "Insira o valor da base:"
-       		syscall
+       	add $a2,$v0,$zero      #Armazenando valor do expoente
 
+	addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
+      	la   $a0, msg3         # a0 = "Insira o valor do módulo:"
+       	syscall
 
-      		li $v0, 5              # Chamada de leitura para valor da base
-      		syscall
-      		add $a1,$v0,$zero      #Armazenando valor da base
+      	li $v0, 5              # Chamada de leitura para valor do módulo
+      	syscall
 
+      	add $a3,$v0,$zero      #Armazenando valor do módulo
 
-       		li $a0, 0xA
-      		li $v0, 0xB
-      		syscall		       #Imprime quebra de linha
+	jr $ra
 
-
-     		addi $v0, $zero, 4     # tipo de chamada 4que é a exibição e mensagem
-       		la   $a0, msg2         # a0 = "Insira o valor do expoente:"
-       		syscall
-
-       		li $v0, 5              # Chamada de leitura para valor do expoente
-       		syscall
-       		add $a2,$v0,$zero      #Armazenando valor do expoente
-
-       		jal le_
+main: 		
+	jal le_intero
+		
+	jal eh_primo
+	
+	beq $v0, $zero, erro
+	jal calc_exp
+	jal imprime_saida
+	j Exit
+	erro:
+	jal imprime_erro
+	Exit:
